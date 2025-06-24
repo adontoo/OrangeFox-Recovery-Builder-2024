@@ -1,0 +1,13 @@
+diff --git a/orangefox_sync.sh b/orangefox_sync.sh
+index 297ce4d..15564bc 100755
+--- a/orangefox_sync.sh
++++ b/orangefox_sync.sh
+@@ -193,7 +193,7 @@ get_twrp_minimal_manifest() {
+   echo "-- Done.";
+ 
+   echo "-- Syncing the $TWRP_BRANCH minimal manifest repo ...";
+-  repo sync;
++  repo sync -q;
+   [ "$?" != "0" ] && {
+    abort "-- Failed to Sync the minimal manifest repo. Quitting.";
+   }
