@@ -99,7 +99,9 @@ jobs:
         git config --global user.email "1056651908@qq.com"
         git clone https://gitlab.com/OrangeFox/sync.git
         cd sync
-        df -h
+        wget https://github.com/adontoo/OrangeFox-Recovery-Builder-2024/raw/refs/heads/fox_14.1-meizu/fox_repo-silent.patch
+        git apply fox_repo-silent.patch
+        rm fox_repo-silent.patch
         ./orangefox_sync.sh --branch ${{ github.event.inputs.MANIFEST_BRANCH }} --path ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
 
     - name: Apply Patch For Meizu
