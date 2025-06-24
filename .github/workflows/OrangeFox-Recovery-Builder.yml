@@ -87,6 +87,8 @@ jobs:
         git clone https://gitlab.com/OrangeFox/misc/scripts
         cd scripts
         sudo bash setup/android_build_env.sh
+        sudo apt-get autoremove -y
+        sudo apt-get clean
       
     - name: Set-up Manifest
       if: github.event.inputs.MANIFEST_BRANCH == '11.0' || github.event.inputs.MANIFEST_BRANCH == '12.1' || github.event.inputs.MANIFEST_BRANCH == '14.1'
@@ -97,6 +99,7 @@ jobs:
         git config --global user.email "1056651908@qq.com"
         git clone https://gitlab.com/OrangeFox/sync.git
         cd sync
+        df -h
         ./orangefox_sync.sh --branch ${{ github.event.inputs.MANIFEST_BRANCH }} --path ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
 
     - name: Apply Patch For Meizu
