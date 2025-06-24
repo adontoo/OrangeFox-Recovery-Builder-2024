@@ -7,7 +7,7 @@ index 297ce4d..15564bc 100755
  
    echo "-- Syncing the $TWRP_BRANCH minimal manifest repo ...";
 -  repo sync;
-+  repo sync -q;
++  repo sync | grep -v -e 'Updating files' -e 'Checking out files';
    [ "$?" != "0" ] && {
     abort "-- Failed to Sync the minimal manifest repo. Quitting.";
    }
