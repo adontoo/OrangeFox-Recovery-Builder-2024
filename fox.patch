@@ -1,0 +1,96 @@
+diff --git a/gui/gui.cpp b/gui/gui.cpp
+index ab33bb85..80bffc47 100644
+--- a/gui/gui.cpp
++++ b/gui/gui.cpp
+@@ -55,6 +55,8 @@ extern "C"
+ #include "blanktimer.hpp"
+ #include "tw_atomic.hpp"
+ 
++#include <android-base/properties.h>
++
+ // Enable to print render time of each frame to the log file
+ //#define PRINT_RENDER_TIME 1
+ 
+@@ -87,6 +89,8 @@ static int gRecorder = -1;
+ 
+ extern "C" void gr_write_frame_to_file(int fd);
+ 
++static uint32_t touch_mapping = android::base::GetIntProperty("vendor.screen.touch_mapping", 0);
++
+ static void flip(void)
+ {
+ 	if (gRecorder != -1)
+@@ -326,9 +330,20 @@ void InputHandler::doTouchStart()
+ 
+ void InputHandler::process_EV_ABS(input_event& ev)
+ {
++
+ 	x = ev.value >> 16;
+ 	y = ev.value & 0xFFFF;
+ 
++	if(touch_mapping == 1)
++	{
++		if((ev.value >> 16) > TW_SCREEN_TOUCH_X || (ev.value & 0xFFFF) > TW_SCREEN_TOUCH_Y)
++		{
++			x = (ev.value >> 16) / 10;
++			y = (ev.value & 0xFFFF) / 10;
++			LOGINFO("adontoo x = : %d, y = %d\n", x, y);
++		}
++	}
++
+ 	if (ev.code == 0)
+ 	{
+ #ifndef TW_USE_KEY_CODE_TOUCH_SYNC
+diff --git a/partitionmanager.cpp b/partitionmanager.cpp
+index 06eb0f9e..d75f4494 100755
+--- a/partitionmanager.cpp
++++ b/partitionmanager.cpp
+@@ -115,9 +115,9 @@ extern "C" {
+ #endif
+ 
+ #ifdef AB_OTA_UPDATER
+-#include <android/hardware/boot/1.0/IBootControl.h>
+-using android::hardware::boot::V1_0::CommandResult;
+-using android::hardware::boot::V1_0::IBootControl;
++#include <BootControlClient.h>
++using android::hal::BootControlClient;
++using android::hal::CommandResult;
+ #endif
+ 
+ using android::fs_mgr::DestroyLogicalPartition;
+@@ -3679,17 +3679,15 @@ void TWPartitionManager::Set_Active_Slot(const string& Slot) {
+ 	LOGINFO("Setting active slot %s\n", Slot.c_str());
+ #ifdef AB_OTA_UPDATER
+ 	if (!Active_Slot_Display.empty()) {
+-		android::sp<IBootControl> module = IBootControl::getService();
++		const auto module = BootControlClient::WaitForService();
+ 		if (module == nullptr) {
+ 			LOGERR("Error getting bootctrl module.\n");
+ 		} else {
+-			uint32_t slot_number = 0;
++			int32_t slot_number = 0;
+ 			if (Slot == "B")
+ 				slot_number = 1;
+-			CommandResult result;
+-			auto ret = module->setActiveBootSlot(slot_number, [&result]
+-					(const CommandResult &cb_result) { result = cb_result; });
+-			if (!ret.isOk() || !result.success)
++			CommandResult result = module->SetActiveBootSlot(slot_number);
++			if (!result.success)
+ 				gui_msg(Msg(msg::kError, "unable_set_boot_slot=Error changing bootloader boot slot to {1}")(Slot));
+ 		}
+ 		DataManager::SetValue("tw_active_slot", Slot); // Doing this outside of this if block may result in a seg fault because the DataManager may not be ready yet
+diff --git a/variables.h b/variables.h
+index 286328e9..3da49add 100644
+--- a/variables.h
++++ b/variables.h
+@@ -27,6 +27,9 @@
+ #define TW_VERSION_STR 		FOX_MAIN_VERSION_STR
+ #define BUILD_TYPE_STR 		FOX_BUILD_TYPE
+ 
++#define TW_SCREEN_TOUCH_X           1368
++#define TW_SCREEN_TOUCH_Y           3192
++
+ // OrangeFox - Values
+ #define FOX_DEVICE              FOX_DEVICE_MODEL
+ #define OF_MAINTAINER_STR	"of_maintainer"
