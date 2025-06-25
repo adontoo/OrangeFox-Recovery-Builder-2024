@@ -23,14 +23,19 @@ on:
         description: 'Specify your Build Target'
         required: true
         default: 'recovery'
-      LDCHECK:
+      RUN_LDCHECK:
         description: 'Path of blobs to check' 
         required: true
-        default: 'vendor/bin/qseecomd'
+        default: 'false'
         type: choice
         options:
         - true
         - false
+        
+      LDCHECK_FILE:
+        description: 'Path of blobs to check' 
+        required: true
+        default: 'vendor/bin/qseecomd'
 
 jobs:
   build:
@@ -163,12 +168,12 @@ jobs:
           MD5 (img): ${{ env.MD5_IMG }}
           
     - name: Run LDCheck
-      if: github.event.inputs.LDCHECK == 'true'
+      if: github.event.inputs.RUN_LDCHECK == 'true'
       run: |
         cd tools
         mv -n libneeds ${{ env.FILE_PATH }}/recovery/root/
         mv -n ldcheck ${{ env.FILE_PATH }}/recovery/root/
         cd ${{ env.FILE_PATH }}/recovery/root/
-        python3 ldcheck -p system/lib64:vendor/lib64:system/lib:vendor/lib -d ${{ github.event.inputs.LDCHECK }}
+        python3 ldcheck -p system/lib64:vendor/lib64:system/lib:vendor/lib -d ${{ github.event.inputs.LDCHECK_FILE }}
         echo "Done checking missing dependencies. Review, and reconfigure your tree."
       continue-on-error: true
