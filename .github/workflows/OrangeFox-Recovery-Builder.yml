@@ -74,13 +74,18 @@ jobs:
         sudo apt-get autoremove -y
         sudo apt-get clean
       
-    - name: Clone OrangeFox_14.1 from https://github.com/ymdzq/OrangeFox_Recovery
+    - name: Set-up Manifest
       run: |
         mkdir -p ${GITHUB_WORKSPACE}/OrangeFox
         cd ${GITHUB_WORKSPACE}/OrangeFox
         git config --global user.name "adontoo"
-        git config --global user.email "1056651908@qq.com"        
-        git clone https://github.com/ymdzq/OrangeFox_Recovery.git -b fox_14.1 ${GITHUB_WORKSPACE}/OrangeFox/fox_14.1
+        git config --global user.email "1056651908@qq.com"
+        git clone https://gitlab.com/OrangeFox/sync.git
+        cd sync
+        wget https://github.com/adontoo/OrangeFox-Recovery-Builder-2024/raw/refs/heads/fox_14.1-meizu/fox_repo-silent.patch
+        git apply fox_repo-silent.patch
+        rm fox_repo-silent.patch
+        ./orangefox_sync.sh --branch 14.1 --path ${GITHUB_WORKSPACE}/OrangeFox/fox_14.1
 
     - name: Apply Patch For Meizu
       run: |
